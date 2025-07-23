@@ -1,5 +1,8 @@
 import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { deleteInvoice as deleteInvoiceAction } from '@/app/lib/actions';
+import { revalidatePath } from 'next/cache';
+import { sql } from '@vercel/postgres';
 
 export function CreateInvoice() {
   return (
@@ -25,12 +28,19 @@ export function UpdateInvoice({ id }: { id: string }) {
 }
 
 export function DeleteInvoice({ id }: { id: string }) {
+    const deleteInvoiceWithId = deleteInvoiceAction.bind(null, id);
+  
   return (
-    <>
+    <form action={deleteInvoiceWithId}>
       <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
         <span className="sr-only">Delete</span>
         <TrashIcon className="w-5" />
       </button>
-    </>
+    </form>
   );
+}
+
+export async function deleteInvoice(id: string) {
+  await sql`DELETE FROM invoices WHERE id = ${id}`;
+  revalidatePath('/dashboard/invoices');
 }
